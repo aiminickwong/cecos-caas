@@ -1,0 +1,94 @@
+#!/bin/bash
+
+clean() {
+	docker stack rm cecos-caas && sleep 5
+	docker network rm cecos-caas_agent && docker network rm cecos-caas_agent
+	docker volume rm cecos-caas_data && docker volume rm cecos-caas_data 2>/dev/null
+	docker volume ls ; docker network ls
+	sed -i '/hostnamectl set-hostname cecos-caas*/d' /etc/rc.local
+	rm -rf /opt/cecos-caas-installed
+	docker volume rm cecos-caas_data 2>/dev/null && docker swarm leave --force && docker node ls && docker ps -a
+	systemctl restart docker && sleep 3
+	docker volume rm cecos-caas_data 2>/dev/null ; docker volume rm cecos-caas_data 2>/dev/null
+	echo 'Cleaned!'
+	clear
+	docker kill $(docker ps -a | grep Exited | grep cecos-caas_mgmt | awk '{print $1}') 2>/dev/null
+	docker kill $(docker ps -a | grep Exited | grep cecos-caas_agent | awk '{print $1}') 2>/dev/null
+	docker rm $(docker ps -a | grep Exited | grep cecos-caas_mgmt | awk '{print $1}') 2>/dev/null
+	docker rm $(docker ps -a | grep Exited | grep cecos-caas_agent | awk '{print $1}') 2>/dev/null
+	docker volume ls ; docker network ls
+	for i in $(find /var/log/ -type f -exec ls {} \;); do >$i; done 2>/dev/null ; \
+	rm -rf /tmp/* 2>/dev/null; rm -rf /var/tmp/* 2>/dev/null ; \
+	>~/.viminfo ; >/root/.viminfo ; >~/.bash_history ; >/root/.bash_history ; history -c; history -c
+}
+
+cert() {
+	data_Directory='/var/lib/docker/volumes/cecos-caas_data/_data'
+	[ ! -f $data_Directory ] && docker volume create cecos-caas_data
+	cert_name='cecos-caas' ; C='CN' ; ST='Sichuan' ; L='Chengdu' ; O='CecOS-CaaS' ; \
+	OU='CECOS.OPENFANS.ORG' ; CN="$(hostname)" ; emaileAddress='admin@openfans.org'	
+	openssl genrsa -out $data_Directory/$cert_name.key 4096 ; \
+	openssl ecparam -genkey -name secp384r1 -out $data_Directory/$cert_name.key ;\
+	openssl req -new -x509 -sha256 -key $data_Directory/$cert_name.key -out $data_Directory/$cert_name.crt -days 36500 \
+	-subj "/C=$C/ST=$ST/L=$L/O=$O/OU=$OU/CN=$CN/emailAddress=$emaileAddress"; \
+	openssl x509 -in $data_Directory/$cert_name.crt -noout -text | grep 'Issuer:'
+}
+
+install() {
+	hostName='cecos-caas'; data_Directory='/var/lib/docker/volumes/cecos-caas_data/_data'
+	ymlURL='https://raw.githubusercontent.com/aiminickwong/cecos-caas/master/cecos-caas.yml'	
+	[ ! -f $data_Directory ] && docker volume create cecos-caas_data
+	systemctl enable rc-local
+	echo -e "hostnamectl set-hostname $hostName; hostname $hostName\nexit">/etc/rc.local
+	hostnamectl set-hostname $hostName; hostname $hostName
+	systemctl enable docker && systemctl restart docker && docker swarm init >/root/swarmInit
+	wget -O /tmp/cecos-caas.yml $ymlURL
+}
+
+create() {
+	docker stack deploy cecos-caas -c /tmp/cecos-caas.yml && touch /opt/cecos-caas-installed ; \
+	echo 'Done!'
+	sleep 15
+	docker kill $(docker ps -a | grep Exited | grep cecos-caas_mgmt | awk '{print $1}') 2>/dev/null
+	docker kill $(docker ps -a | grep Exited | grep cecos-caas_agent | awk '{print $1}') 2>/dev/null
+	docker rm $(docker ps -a | grep Exited | grep cecos-caas_mgmt | awk '{print $1}') 2>/dev/null
+	docker rm $(docker ps -a | grep Exited | grep cecos-caas_agent | awk '{print $1}') 2>/dev/null
+	docker swarm update --task-history-limit=1 && sleep 3
+	docker swarm update --task-history-limit=5
+	docker ps -a
+	docker stack ps cecos-caas
+}
+
+check() {
+	[ -f /opt/cecos-caas-installed ] && echo 'Installed' && exit 1
+}
+
+deploy() {
+	check
+	clean
+	install
+	cert
+	create
+}
+
+arg=$1
+case $arg in
+	clean)
+		clean
+	;;
+	cert)
+		cert
+	;;
+	install)
+		install
+	;;
+	create)
+		create
+	;;
+	deploy)
+		deploy
+	;;
+	*)
+		deploy
+	;;
+esac

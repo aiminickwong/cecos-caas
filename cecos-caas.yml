@@ -1,0 +1,49 @@
+version: '3'
+services:
+    agent:
+        image: openfans/cecos-caas-agent:latest
+        labels:
+            - "service=openfans.cecos.caas.agent"
+        environment:
+            AGENT_CLUSTER_ADDR: tasks.cecos-caas-agent
+            AGENT_PORT: 18081
+            LOG_LEVEL: error
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            agent:
+                aliases:
+                    - cecos-caas-agent
+        deploy:
+            labels:
+                - "service=openfans.cecos.caas.agent.service"
+            mode: global
+    mgmt:
+        image: openfans/cecos-caas:latest
+        labels:
+            - "service=openfans.cecos.caas.mgmt"
+        hostname: cecos-caas-mgmt
+        command: -l service=openfans.cecos.caas.agent -l service=openfans.cecos.caas.mgmt --ssl --sslcert /data/cecos-caas.crt --sslkey /data/cecos-caas.key -H tcp://tasks.cecos-caas-agent:18081 --tlsskipverify --no-analytics
+        volumes:
+            - data:/data
+        depends_on:
+            - cecos-caas-agent
+        ports:
+            - "18080:18080"
+        networks:
+            agent:
+                aliases:
+                    - cecos-caas-mgmt
+        deploy:
+            labels:
+                - "service=openfans.cecos.caas.mgmt.service"
+            mode: replicated
+            replicas: 1
+            placement:
+                constraints: [node.role == manager]
+                constraints: [node.hostname == cecos-caas]
+networks:
+    agent:
+        driver: overlay
+volumes:
+        data:
