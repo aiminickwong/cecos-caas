@@ -76,7 +76,7 @@ systemctl daemon-reload ; systemctl restart docker.service
 
 ###### 可能遇到的问题
 
-开启接受远程连接模式后无法启动docker服务，提示一下问题（ syslog 系统日志）：
+开启接受远程连接模式后无法启动docker服务，提示以下问题（ syslog 系统日志）：
 
 ```
 unable to configure the Docker daemon with file /etc/docker/daemon.json: the following directives are specified both as a flag and in the configuration file: hosts: (from flag: [fd://], from file: [tcp://0.0.0.0:2375, unix:///var/run/docker.socket])
