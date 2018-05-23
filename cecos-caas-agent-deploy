@@ -1,0 +1,4 @@
+#!/bin/bash
+ymlURL='https://raw.githubusercontent.com/aiminickwong/cecos-caas/master/cecos-caas-agent.yml'
+wget -O /tmp/cecos-caas-agent.yml $ymlURL
+docker stack deploy cecos-caas -c /tmp/cecos-caas-agent.yml

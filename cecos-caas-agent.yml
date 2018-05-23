@@ -1,0 +1,27 @@
+services:
+  agent:
+    image: openfans/cecos-caas-agent:latest
+    labels:
+      - "service=openfans.cecos.caas.agent"
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.cecos-caas-agent
+      AGENT_PORT: 18081
+      LOG_LEVEL: error
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - target: 18081
+        published: 18081
+        protocol: tcp
+        mode: host
+    networks:
+      agent:
+        aliases:
+          - cecos-caas-agent
+    deploy:
+      labels:
+        - "service=openfans.cecos.caas.agent.service"
+      mode: global
+networks:
+  agent:
+    driver: overlay
