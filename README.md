@@ -84,11 +84,17 @@ unable to configure the Docker daemon with file /etc/docker/daemon.json: the fol
 
 </br>
 
-修改 '/lib/systemd/system/docker.service' 文件后
+<b>解决办法：</b>
 
-执行命令 'systemctl daemon-reload ; systemctl restart docker.service'
+修改 '/lib/systemd/system/docker.service' 文件
 
-修复问题
+然后执行命令
+
+```
+systemctl daemon-reload ; systemctl restart docker.service'
+```
+
+即可修复问题
 
 </br>
 
