@@ -1,3 +1,4 @@
+version: '3.2'
 services:
   agent:
     image: openfans/cecos-caas-agent:latest
