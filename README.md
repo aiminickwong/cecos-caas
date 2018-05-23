@@ -16,11 +16,11 @@ curl -s https://raw.githubusercontent.com/aiminickwong/cecos-caas/master/cecos-c
 
 ## 部署代理（手动）
 
-#### Docker Swarm (HOST)  主机模式
+#### Docker Swarm (host)  主机模式
 
 curl -s https://raw.githubusercontent.com/aiminickwong/cecos-caas/master/cecos-caas-agent-deploy | bash
 
-如果您还为部署主机为 Docker Swarm 集群模式，
+如果您还未部署主机为 Docker Swarm 集群模式，
 
 请先执行命令 “ docker swarm init ” 初始您的节点为 Docker Swarm 集群模式
 
