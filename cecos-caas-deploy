@@ -40,7 +40,8 @@ install() {
 	ymlURL='https://raw.githubusercontent.com/aiminickwong/cecos-caas/master/cecos-caas.yml'	
 	[ ! -f $data_Directory ] && docker volume create cecos-caas_data
 	systemctl enable rc-local
-	echo -e "hostnamectl set-hostname $hostName; hostname $hostName\nexit">/etc/rc.local
+	echo '#!/bin/bash'>/etc/rc.local ; \
+	echo -e "hostnamectl set-hostname $hostName; hostname $hostName\nexit">>/etc/rc.local
 	hostnamectl set-hostname $hostName; hostname $hostName
 	systemctl enable docker && systemctl restart docker && docker swarm init >/root/swarmInit
 	wget -O /tmp/cecos-caas.yml $ymlURL
