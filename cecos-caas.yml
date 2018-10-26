@@ -1,7 +1,7 @@
 version: '3.2'
 services:
     agent:
-        image: openfans/cecos-caas-agent:latest
+        image: openfans/cecos-caas-agent:linux-amd64-1.1.2
         labels:
             - "service=openfans.cecos.caas.agent"
         environment:
@@ -22,7 +22,7 @@ services:
             placement:
                 constraints: [node.platform.os == linux]
     mgmt:
-        image: openfans/cecos-caas:latest
+        image: openfans/cecos-caas:2.19.2.0
         labels:
             - "service=openfans.cecos.caas.mgmt"
         hostname: cecos-caas-mgmt
